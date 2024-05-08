@@ -15,8 +15,10 @@
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@tanstack/react-query": "^5.62.8",
+    "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
     "localforage": "^1.10.0",
     "lucide-react": "^0.468.0",
     "match-sorter": "^8.0.0",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@types/axios": "^0.14.4",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
