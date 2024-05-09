@@ -10,6 +10,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { login } from '@/http/api';
+import { cn } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { LoaderCircle } from 'lucide-react';
 import { useRef } from 'react';
@@ -46,8 +47,10 @@ const LoginPage = () => {
                 <CardHeader>
                     <CardTitle className="text-2xl">Login</CardTitle>
                     <CardDescription>
-                        Enter your email below to login to your account.
-                        {mutation.isPending && <div>Loading...</div>}
+                        Enter your email below to login to your account. <br />
+                        {mutation.isError && (
+                            <span className="text-red-500 text-sm">{'Something went wrong'}</span>
+                        )}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
