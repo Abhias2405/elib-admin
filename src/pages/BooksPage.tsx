@@ -24,6 +24,15 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
     Table,
     TableBody,
     TableCell,
@@ -34,16 +43,104 @@ import {
 import { getBooks } from '@/http/api';
 import { Book } from '@/types';
 import { useQuery } from '@tanstack/react-query';
-import { CirclePlus, MoreHorizontal } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CirclePlus, LoaderCircle, MoreHorizontal } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+
+const ITEMS_PER_PAGE = 10;
 
 const BooksPage = () => {
-    // todo: add loading spinner, and error message
+    const [searchParams, setSearchParams] = useSearchParams();
+    const currentPage = parseInt(searchParams.get('page') || '1');
+
     const { data, isLoading, isError } = useQuery({
-        queryKey: ['books'],
-        queryFn: getBooks,
-        staleTime: 10000, // in Milli-seconds
+        queryKey: ['books', currentPage],
+        queryFn: () => getBooks({ page: currentPage, limit: ITEMS_PER_PAGE }),
+        staleTime: 10000,
     });
+
+    const totalPages = data?.data ? Math.ceil(data.data.totalBooks / ITEMS_PER_PAGE) : 0;
+
+    const handlePageChange = (page: number) => {
+        setSearchParams({ page: page.toString() });
+    };
+
+    const renderPaginationItems = () => {
+        const items = [];
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        // First page
+        if (startPage > 1) {
+            items.push(
+                <PaginationItem key="1">
+                    <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
+                </PaginationItem>
+            );
+            if (startPage > 2) {
+                items.push(
+                    <PaginationItem key="start-ellipsis">
+                        <PaginationEllipsis />
+                    </PaginationItem>
+                );
+            }
+        }
+
+        // Page numbers
+        for (let page = startPage; page <= endPage; page++) {
+            items.push(
+                <PaginationItem key={page}>
+                    <PaginationLink
+                        isActive={page === currentPage}
+                        onClick={() => handlePageChange(page)}
+                    >
+                        {page}
+                    </PaginationLink>
+                </PaginationItem>
+            );
+        }
+
+        // Last page
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                items.push(
+                    <PaginationItem key="end-ellipsis">
+                        <PaginationEllipsis />
+                    </PaginationItem>
+                );
+            }
+            items.push(
+                <PaginationItem key={totalPages}>
+                    <PaginationLink onClick={() => handlePageChange(totalPages)}>
+                        {totalPages}
+                    </PaginationLink>
+                </PaginationItem>
+            );
+        }
+
+        return items;
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <LoaderCircle className="animate-spin h-8 w-8 text-muted-foreground" />
+                <span className="ml-4 text-muted-foreground">Loading books...</span>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-red-500">Failed to load books. Please try again later.</p>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -91,8 +188,9 @@ const BooksPage = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data?.data.map((book: Book) => {
-                                return (
+                            {data?.data?.books?.length > 0 ? (
+                                //@ts-ignore
+                                data.data.books.map((book: Book) => (
                                     <TableRow key={book._id}>
                                         <TableCell className="hidden sm:table-cell">
                                             <img
@@ -111,7 +209,7 @@ const BooksPage = () => {
                                             {book.author.name}
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">
-                                            {book.createdAt}
+                                            {new Date(book.createdAt).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>
@@ -132,15 +230,43 @@ const BooksPage = () => {
                                             </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                );
-                            })}
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center">
+                                        No books available.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
                     <div className="text-xs text-muted-foreground">
-                        Showing <strong>1-10</strong> of <strong>32</strong> products
+                        Showing <strong>{data?.data?.books?.length || 0}</strong> of{' '}
+                        <strong>{data?.data?.totalBooks || 0}</strong> books
                     </div>
+                    {totalPages > 1 && (
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                                        //@ts-ignore
+                                        disabled={currentPage === 1}
+                                    />
+                                </PaginationItem>
+                                {renderPaginationItems()}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                                        //@ts-ignore
+                                        disabled={currentPage === totalPages}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    )}
                 </CardFooter>
             </Card>
         </div>

@@ -13,12 +13,13 @@ import { login } from '@/http/api';
 import useTokenStore from '@/store';
 import { useMutation } from '@tanstack/react-query';
 import { LoaderCircle } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const setToken = useTokenStore((state) => state.setToken);
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
@@ -29,28 +30,49 @@ const LoginPage = () => {
             setToken(response.data.accessToken);
             navigate('/dashboard/home');
         },
+        onError: (error: any) => {
+            if (error.response?.status === 404) {
+                setErrorMessage('User not found with this email');
+            } else if (error.response?.status === 400) {
+                setErrorMessage(error.response.data.message || 'Username or password incorrect');
+            } else {
+                setErrorMessage('Something went wrong. Please try again later.');
+            }
+        }
     });
 
     const handleLoginSubmit = () => {
         const email = emailRef.current?.value;
         const password = passwordRef.current?.value;
-        console.log('data', { email, password });
 
+        // Reset error message on new submission
+        setErrorMessage('');
+
+        // Client-side validation
         if (!email || !password) {
-            return alert('Please enter email and password');
+            setErrorMessage('Please enter both email and password');
+            return;
+        }
+
+        if (!email.includes('@')) {
+            setErrorMessage('Please enter a valid email address');
+            return;
         }
 
         mutation.mutate({ email, password });
     };
+
     return (
         <section className="flex justify-center items-center h-screen">
             <Card className="w-full max-w-sm">
                 <CardHeader>
                     <CardTitle className="text-2xl">Login</CardTitle>
                     <CardDescription>
-                        Enter your email below to login to your account. <br />
-                        {mutation.isError && (
-                            <span className="text-red-500 text-sm">{'Something went wrong'}</span>
+                        Enter your email below to login to your account.
+                        {errorMessage && (
+                            <p className="text-red-500 text-sm mt-2 font-medium">
+                                {errorMessage}
+                            </p>
                         )}
                     </CardDescription>
                 </CardHeader>
@@ -67,7 +89,12 @@ const LoginPage = () => {
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="password">Password</Label>
-                        <Input ref={passwordRef} id="password" type="password" required />
+                        <Input 
+                            ref={passwordRef} 
+                            id="password" 
+                            type="password" 
+                            required 
+                        />
                     </div>
                 </CardContent>
                 <CardFooter>
@@ -75,15 +102,20 @@ const LoginPage = () => {
                         <Button
                             onClick={handleLoginSubmit}
                             className="w-full"
-                            disabled={mutation.isPending}>
-                            {mutation.isPending && <LoaderCircle className="animate-spin" />}
-
-                            <span className="ml-2">Sign in</span>
+                            disabled={mutation.isPending}
+                        >
+                            {mutation.isPending && (
+                                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            <span>Sign in</span>
                         </Button>
 
                         <div className="mt-4 text-center text-sm">
                             Don't have an account?{' '}
-                            <Link to={'/auth/register'} className="underline">
+                            <Link 
+                                to={'/auth/register'} 
+                                className="text-primary hover:underline"
+                            >
                                 Sign up
                             </Link>
                         </div>

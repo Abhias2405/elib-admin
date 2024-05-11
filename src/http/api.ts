@@ -1,7 +1,6 @@
 import axios from 'axios';
 import useTokenStore from '@/store';
 
-
 const api = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL,
     headers: {
@@ -23,7 +22,8 @@ export const login = async (data: { email: string; password: string }) =>
 export const register = async (data: { name: string; email: string; password: string }) =>
     api.post('/api/users/register', data);
 
-export const getBooks = async () => api.get('/api/books');
+export const getBooks = async ({ page = 1, limit = 10 }: { page?: number; limit?: number }) =>
+    api.get(`/api/books/user-books?page=${page}&limit=${limit}`);
 
 export const createBook = async (data: FormData) =>
     api.post('/api/books', data, {
