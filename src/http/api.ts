@@ -31,3 +31,13 @@ export const createBook = async (data: FormData) =>
             'Content-Type': 'multipart/form-data',
         },
     });
+
+export const deleteBook = async (bookId: string) =>
+    api.delete(`/api/books/${bookId}`);
+
+
+export const getBookById = async (bookId: string) =>
+    api.get(`/api/books/${bookId}`);
+
+export const updateBook = async ({ bookId, data }: { bookId: string; data: FormData }) =>
+    api.patch(`/api/books/${bookId}`, data);

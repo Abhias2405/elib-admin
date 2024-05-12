@@ -45,6 +45,7 @@ import { Book } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { CirclePlus, LoaderCircle, MoreHorizontal } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { DeleteBookDialog } from './DeleteBook';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -224,8 +225,20 @@ const BooksPage = () => {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link to={`/dashboard/books/edit/${book._id}`}>
+                                                            Edit
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DeleteBookDialog
+                                                        bookId={book._id}
+                                                        bookTitle={book.title}
+                                                        trigger={
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        }
+                                                    />
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
