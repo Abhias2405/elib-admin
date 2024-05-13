@@ -207,7 +207,7 @@ const BooksPage = () => {
                                             <Badge variant="outline">{book.genre}</Badge>
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">
-                                            {book.author.name}
+                                            {book.writer}
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">
                                             {new Date(book.createdAt).toLocaleDateString()}

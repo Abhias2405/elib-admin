@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -34,6 +33,9 @@ const formSchema = z.object({
     genre: z.string().min(2, {
         message: 'Genre must be at least 2 characters.',
     }),
+    writer: z.string().min(2, {
+        message: 'Author must be at least 2 characters.',
+    }),
     description: z.string().min(2, {
         message: 'Description must be at least 2 characters.',
     }),
@@ -53,6 +55,7 @@ const CreateBook = () => {
         defaultValues: {
             title: '',
             genre: '',
+            writer:'',
             description: '',
         },
     });
@@ -75,6 +78,7 @@ const CreateBook = () => {
         const formdata = new FormData();
         formdata.append('title', values.title);
         formdata.append('genre', values.genre);
+        formdata.append('writer', values.writer);
         formdata.append('description', values.description);
         formdata.append('coverImage', values.coverImage[0]);
         formdata.append('file', values.file[0]);
@@ -145,6 +149,20 @@ const CreateBook = () => {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Genre</FormLabel>
+                                            <FormControl>
+                                                <Input type="text" className="w-full" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="writer"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Author Name</FormLabel>
                                             <FormControl>
                                                 <Input type="text" className="w-full" {...field} />
                                             </FormControl>

@@ -34,6 +34,9 @@ const formSchema = z.object({
     genre: z.string().min(2, {
         message: 'Genre must be at least 2 characters.',
     }),
+    writer: z.string().min(2, {
+        message: 'Author must be at least 2 characters.',
+    }),
     description: z.string().min(2, {
         message: 'Description must be at least 2 characters.',
     }),
@@ -57,11 +60,13 @@ const UpdateBook = () => {
         defaultValues: {
             title: bookData?.data?.title || '',
             genre: bookData?.data?.genre || '',
+            writer: bookData?.data?.writer || '',
             description: bookData?.data?.description || '',
         },
         values: {
             title: bookData?.data?.title || '',
             genre: bookData?.data?.genre || '',
+            writer: bookData?.data?.writer || '',
             description: bookData?.data?.description || '',
         },
     });
@@ -87,6 +92,7 @@ const UpdateBook = () => {
             const formdata = new FormData();
             formdata.append('title', values.title);
             formdata.append('genre', values.genre);
+            formdata.append('writer', values.writer);
             formdata.append('description', values.description);
             
             if (values.coverImage?.[0]) {
@@ -187,6 +193,25 @@ const UpdateBook = () => {
                                                     type="text" 
                                                     className="w-full" 
                                                     placeholder="Enter book genre"
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="writer"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Author Name</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    type="text" 
+                                                    className="w-full" 
+                                                    placeholder="Enter Author Name"
                                                     {...field} 
                                                 />
                                             </FormControl>
